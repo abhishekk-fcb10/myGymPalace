@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>myGymPalace — WordPress Playground Launcher</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0b0b0d;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: linear-gradient(90deg, #111 0%, #1a1a1a 100%);
+      border-bottom: 1px solid #222;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    header h1 span { color: #e63946; }
+    header .actions a {
+      color: #ddd;
+      text-decoration: none;
+      font-size: 13px;
+      margin-left: 16px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px solid #333;
+      transition: all 0.15s ease;
+    }
+    header .actions a:hover {
+      background: #e63946;
+      border-color: #e63946;
+      color: #fff;
+    }
+    main { flex: 1; position: relative; background: #000; }
+    iframe { width: 100%; height: 100%; border: 0; display: block; }
+    #status {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #0b0b0d; color: #aaa;
+      font-size: 14px; gap: 16px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .spinner {
+      width: 38px; height: 38px;
+      border: 3px solid #222;
+      border-top-color: #e63946;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #status.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>my<span>Gym</span>Palace</h1>
+    <div class="actions">
+      <a href="#" id="reload">Reload Site</a>
+      <a href="#" id="admin">Open Admin</a>
+    </div>
+  </header>
+  <main>
+    <div id="status">
+      <div class="spinner"></div>
+      <div>Booting WordPress in your browser… (first run downloads ~10 MB)</div>
+    </div>
+    <iframe id="wp" title="myGymPalace WordPress site"></iframe>
+  </main>
+
+  <script type="module">
+    import { startPlaygroundWeb } from 'https://playground.wordpress.net/client/index.js';
+
+    const iframe = document.getElementById('wp');
+    const status = document.getElementById('status');
+
+    const blueprint = await fetch('./blueprint.json').then(r => r.json());
+
+    const client = await startPlaygroundWeb({
+      iframe,
+      remoteUrl: 'https://playground.wordpress.net/remote.html',
+      blueprint,
+    });
+
+    await client.isReady();
+    status.classList.add('hidden');
+
+    document.getElementById('reload').addEventListener('click', (e) => {
+      e.preventDefault();
+      location.reload();
+    });
+    document.getElementById('admin').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await client.goTo('/wp-admin/');
+    });
+  </script>
+</body>
+</html>
